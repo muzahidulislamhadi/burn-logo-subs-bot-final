@@ -1,0 +1,15 @@
+{
+  "914051006": {
+    "add_logo": true,
+    "add_subtitles": true,
+    "logo_enabled": true,
+    "output_method": "gcs",
+    "active_logo": "be6d55a4",
+    "logos": {
+      "be6d55a4": {
+        "path": "logos\\914051006_be6d55a4.png",
+        "display_name": "Logo_1"
+      }
+    }
+  }
+}
