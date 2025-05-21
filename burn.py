@@ -1470,17 +1470,18 @@ async def process_video(bot, m: Message, user_id: int, task_id: str, processing_
         if subtitle_applied and logo_applied:
             esc_sub = escape_ffmpeg_path(subtitles_path)
             filter_complex = (
-                f"[0:v]hwdownload,format=nv12,ass='{esc_sub}',hwupload=extra_hw_frames=64[vid]; "
-                f"[1:v]hwupload=extra_hw_frames=64[logo]; "
-                f"[vid][logo]overlay"
+                f"[0:v]hwdownload,format=nv12,ass='{esc_sub}',hwupload_cuda=extra_hw_frames=64[vid_subs]; "
+                f"[1:v]format=nv12,hwupload_cuda=extra_hw_frames=64[logo]; "
+                f"[vid_subs][logo]overlay_cuda=W-w-10:H-h-10"
             )
         elif subtitle_applied and not logo_applied:
             esc_sub = escape_ffmpeg_path(subtitles_path)
-            filter_complex = f"[0:v]hwdownload,format=nv12,ass='{esc_sub}',hwupload=extra_hw_frames=64"
+            filter_complex = f"[0:v]hwdownload,format=nv12,ass='{esc_sub}',hwupload_cuda=extra_hw_frames=64"
         elif logo_applied and not subtitle_applied:
             filter_complex = (
-                "[1:v]hwupload=extra_hw_frames=64[logo]; "
-                "[0:v][logo]overlay"
+                f"[0:v]format=nv12,hwupload_cuda=extra_hw_frames=64[vid]; "
+                f"[1:v]format=nv12,hwupload_cuda=extra_hw_frames=64[logo]; "
+                f"[vid][logo]overlay_cuda=W-w-10:H-h-10"
             )
     else:
         # CPU-based filter chains (no hw acceleration)
@@ -1507,7 +1508,7 @@ async def process_video(bot, m: Message, user_id: int, task_id: str, processing_
             "-c:v", "h264_nvenc",
             "-preset", "p4",
             "-b:v", f"{bitrate_kbps}k",
-            "-maxrate", f"{bitrate_kbps * 1.5}k",
+            "-maxrate", f"{int(bitrate_kbps * 1.5)}k", # Ensured integer for maxrate
             "-bufsize", f"{bitrate_kbps * 2}k",
             "-spatial_aq", "1",
             "-g", "120"
@@ -2620,14 +2621,15 @@ async def is_cuda_available():
     
     # First try to check with a simple h264_nvenc command
     cmd = [
-        "ffmpeg", 
+        "ffmpeg",
         "-hide_banner",
-        "-loglevel", "error",  # Reduce output noise
-        "-f", "lavfi", 
-        "-i", "color=black:s=64x64:r=1", 
-        "-t", "1", 
-        "-c:v", ENCODER,  # Use configured encoder
-        "-f", "null", 
+        "-loglevel", "error", # Reduce output noise
+        "-f", "lavfi",
+        "-i", "testsrc=size=1920x1080:rate=30", # Changed input source
+        "-t", "1",
+        "-c:v", "h264_nvenc", # Explicitly use h264_nvenc and not ENCODER from config for this test
+        "-b:v", "2M", # Added bitrate
+        "-f", "null",
         "-"
     ]
     
