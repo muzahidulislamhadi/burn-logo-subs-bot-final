@@ -1472,7 +1472,7 @@ async def process_video(bot, m: Message, user_id: int, task_id: str, processing_
             filter_complex = (
                 f"[0:v]hwdownload,format=nv12,ass='{esc_sub}',hwupload_cuda=extra_hw_frames=64[vid_subs]; "
                 f"[1:v]format=nv12,hwupload_cuda=extra_hw_frames=64[logo]; "
-                f"[vid_subs][logo]overlay_cuda=W-w-10:H-h-10"
+                f"[vid_subs][logo]overlay_cuda=x='60*(W/1280)':y='42*(H/720)'"
             )
         elif subtitle_applied and not logo_applied:
             esc_sub = escape_ffmpeg_path(subtitles_path)
@@ -1481,7 +1481,7 @@ async def process_video(bot, m: Message, user_id: int, task_id: str, processing_
             filter_complex = (
                 f"[0:v]format=nv12,hwupload_cuda=extra_hw_frames=64[vid]; "
                 f"[1:v]format=nv12,hwupload_cuda=extra_hw_frames=64[logo]; "
-                f"[vid][logo]overlay_cuda=W-w-10:H-h-10"
+                f"[vid_subs][logo]overlay_cuda=x='60*(W/1280)':y='42*(H/720)'"
             )
     else:
         # CPU-based filter chains (no hw acceleration)
@@ -2335,17 +2335,23 @@ async def resolution_selected(bot, query: CallbackQuery):
         # Configure yt-dlp with retries and robust error handling
         # First, extract info to get the title
         info_opts = {
-            'quiet': True,
-            'no_warnings': True,
-            'skip_download': True
+            'quiet': False,
+            'no_warnings': False,
+            'skip_download': True,
+            'verbose': True,
+            'cookies': os.path.abspath('cookies.txt')
         }
+        print(f"DEBUG: Cookie path for info_opts: {os.path.abspath('cookies.txt')}")
+        print(f"DEBUG: info_opts being used: {info_opts}")
         
         # Extract video info to get title
         video_info = {}
         try:
             with yt_dlp.YoutubeDL(info_opts) as ydl:
                 video_info = ydl.extract_info(youtube_url, download=False)
+                print(f"DEBUG: Successfully extracted video_info: {video_info.get('title')}")
         except Exception as info_error:
+            print(f"DEBUG: Error during extract_info: {info_error}")
             logger.warning(f"Could not extract video info: {info_error}")
         
         # Get video title or default to YouTube Video
@@ -2375,8 +2381,10 @@ async def resolution_selected(bot, query: CallbackQuery):
                 'key': 'FFmpegVideoConvertor',
                 'preferedformat': 'mp4',
             }],
-            'progress_hooks': [lambda d: yt_dlp_progress_hook(d, bot, msg, c_time, progress_tracker, loop)]
+            'progress_hooks': [lambda d: yt_dlp_progress_hook(d, bot, msg, c_time, progress_tracker, loop)],
+            'cookies': os.path.abspath('cookies.txt')
         }
+        print(f"DEBUG: Cookie path for info_opts: {os.path.abspath('cookies.txt')}")
         
         try:
             await loop.run_in_executor(None, download_youtube_video, ydl_opts, youtube_url)
