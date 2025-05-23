@@ -5,10 +5,10 @@ A production-ready Telegram bot for video processing that can burn subtitles and
 ## Features
 
 - Process videos from multiple sources:
-  - Direct uploads to Telegram
-  - YouTube links
+  - YouTube links (Working)
   - Google Drive links
-  - Direct URLs
+  - Direct URLs (Not Yet)
+  - - Direct uploads to Telegram (Not Yet)
 - Multiple output methods:
   - Telegram
   - Amazon S3
@@ -91,5 +91,10 @@ python burn.py
 - `/cancel` - Cancel ongoing operations
 
 ## Requirements
+See `requirements.txt` for a complete list of dependencies.
 
-See `requirements.txt` for a complete list of dependencies. 
+If downloading a YouTube video with yt-dlp fails, create a cookies.txt file by copying your browser cookies and placing it in the root directory of your project.
+
+Note when using a GPU: CUDA overlay is enabled, so ensure your logo is carefully resized to fit properly within the video frame.
+
+burn.py file is very long, consider modularizing it into separate functions or files for better readability, easier maintenance and adding more features.
