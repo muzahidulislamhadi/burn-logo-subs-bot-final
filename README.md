@@ -8,14 +8,14 @@ A production-ready Telegram bot for video processing that can burn subtitles and
   - YouTube links (Working)
   - Google Drive links
   - Direct URLs (Not Yet)
-  - - Direct uploads to Telegram (Not Yet)
+  - Direct uploads to Telegram (Not Yet)
 - Multiple output methods:
   - Telegram
   - Amazon S3
-  - Google Cloud Storage
+  - Google Cloud Storage (A Service Account Key .json file from Google Cloud is required)
 - Subtitle handling (SRT and ASS formats)
 - Logo overlays with multiple logo management
-- Real-time progress reporting for downloads and processing
+- Real-time progress reporting for downloads, processing and uploads.
 
 ## Setup Instructions
 
